@@ -1,30 +1,37 @@
-import { setupSocketIO } from '@/socket';
-import { serve } from '@hono/node-server';
+import { ServerWebSocket } from 'bun';
 import { Hono } from 'hono';
-import { Server as HttpServer } from 'http';
-import { Server } from 'socket.io';
+import { createBunWebSocket } from 'hono/bun';
 import { roomRoutes } from './room';
+
 import { userRoutes } from './user';
-const port = 5555
 
-const app = new Hono()
-const server = serve({ fetch: app.fetch, port: 5555 });
-const io = new Server(server as HttpServer);
+const port = 5555;
+const app = new Hono();
 
-app.route('/room', roomRoutes)
-app.route('/user', userRoutes)
+const { upgradeWebSocket, websocket } =
+  createBunWebSocket<ServerWebSocket>()
 
-app.get('/', (c) => c.text('API is running!'))
+app.route('/room', roomRoutes);
+app.route('/user', userRoutes);
+app.get('/', (c) => c.text('API is running!'));
 
-io.on("connection", (socket) => {
-  console.log("client connected");
-});
-
-setupSocketIO(io)
-
-console.log(`🚀 API + Socket.IO rodando em http://localhost:${port}`)
+app.get(
+  '/ws',
+  upgradeWebSocket((c) => {
+    return {
+      onMessage(event, ws) {
+        console.log(`Message from client: ${event.data}`)
+        ws.send('Hello from server!')
+      },
+      onClose: () => {
+        console.log('Connection closed')
+      },
+    }
+  })
+)
 
 export default {
   port,
   fetch: app.fetch,
+  websocket
 }

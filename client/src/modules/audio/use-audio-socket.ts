@@ -1,6 +1,5 @@
 import { env } from "@/env";
 import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
 
 type UseAudioSocketProps = {
   roomId: string;
@@ -15,28 +14,38 @@ export function useAudioSocket({
   isTalking,
   onRemoteVolume,
 }: UseAudioSocketProps) {
-  const socketRef = useRef<Socket | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Conectar ao socket
+  // Conectar ao WebSocket
   useEffect(() => {
     if (!roomId || !participantId) return;
-    const socket = io(env.NEXT_PUBLIC_SOCKET_URL!, {
-      transports: ["websocket"],
-    });
-    console.log(socket);
-    socket.emit("join-room", { roomId, from: participantId });
-    socketRef.current = socket;
-    setIsReady(true);
 
-    // Receber chunks de áudio e tocar
-    socket.on("audio-chunk", ({ chunk }) => {
+    // Exemplo: ws://localhost:5555/ws?roomId=abc&participantId=xyz
+    const wsUrl = `${env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5555/ws"}?roomId=${roomId}&participantId=${participantId}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.binaryType = "arraybuffer";
+
+    ws.onopen = () => {
+      setIsReady(true);
+      // Opcional: envie uma mensagem de "join" se quiser
+      // ws.send(JSON.stringify({ type: "join", roomId, participantId }));
+    };
+
+    ws.onmessage = (event) => {
+      // Recebe chunk de áudio (ArrayBuffer)
       if (!audioContextRef.current) {
         audioContextRef.current = new window.AudioContext();
       }
-      // Decodifica e toca o áudio recebido
-      const float32 = new Float32Array(chunk);
+      let float32: Float32Array;
+      if (typeof event.data === "string") {
+        // Se for string, ignore ou trate mensagens de controle
+        return;
+      } else {
+        float32 = new Float32Array(event.data);
+      }
       const audioBuffer = audioContextRef.current.createBuffer(
         1,
         float32.length,
@@ -54,10 +63,21 @@ export function useAudioSocket({
           float32.reduce((a, b) => a + Math.abs(b), 0) / float32.length;
         onRemoteVolume(avg * 255); // normaliza para 0-255
       }
-    });
+    };
+
+    ws.onclose = () => {
+      setIsReady(false);
+    };
+
+    ws.onerror = (err) => {
+      setIsReady(false);
+      console.error("WebSocket error:", err);
+    };
+
+    wsRef.current = ws;
 
     return () => {
-      socket.disconnect();
+      ws.close();
       setIsReady(false);
     };
   }, [roomId, participantId, onRemoteVolume]);
@@ -82,11 +102,9 @@ export function useAudioSocket({
       processor.onaudioprocess = (e) => {
         const input = e.inputBuffer.getChannelData(0);
         // Envia como Float32Array (pode otimizar para Int16Array se quiser)
-        socketRef.current?.emit("audio-chunk", {
-          roomId,
-          chunk: Array.from(input),
-          from: participantId,
-        });
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(new Float32Array(input).buffer);
+        }
       };
     });
 
