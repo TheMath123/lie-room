@@ -1,3 +1,6 @@
+
+import { isRight } from "@/errors";
+import { getOnlineParticipants } from "@/server/room";
 import { useEffect, useState } from "react";
 
 export function useOnlineParticipants(roomId: string) {
@@ -5,10 +8,9 @@ export function useOnlineParticipants(roomId: string) {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     async function fetchOnline() {
-      const res = await fetch(`/api/room/${roomId}/online`);
-      if (res.ok) {
-        const data = await res.json();
-        setOnlineIds(data);
+    const res = await getOnlineParticipants(roomId);
+      if (isRight(res)) {
+        setOnlineIds(res.value);
       }
     }
     fetchOnline();

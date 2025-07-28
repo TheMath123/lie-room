@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
 export function InviteLinkBox({ roomId }: { roomId: string }) {
+	const [copiedLink, setCopiedLink] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const inviteUrl =
 		typeof window !== "undefined"
@@ -12,13 +13,13 @@ export function InviteLinkBox({ roomId }: { roomId: string }) {
 	const handleCopyLink = async () => {
 		if (!inviteUrl) return;
 		await navigator.clipboard.writeText(inviteUrl);
-		setCopied(true);
+		setCopiedLink(true);
 		setTimeout(() => setCopied(false), 1500);
 	};
 
 	const handleCopy = async () => {
-		if (!inviteUrl) return;
-		await navigator.clipboard.writeText(inviteUrl);
+		if (!roomId) return;
+		await navigator.clipboard.writeText(roomId);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 1500);
 	};
@@ -36,7 +37,7 @@ export function InviteLinkBox({ roomId }: { roomId: string }) {
 					type="button"
 					onClick={handleCopyLink}
 				>
-					{copied ? "Copiado!" : "Copiar"}
+					{copiedLink ? "Copiado!" : "Copiar"}
 				</Button>
 			</div>
 			<div className="flex w-full gap-2">

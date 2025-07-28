@@ -77,6 +77,8 @@ export default function RoomPlayPage() {
   };
 
   function getStatusDot(id: string) {
+    console.log('ID:', id);
+    console.log('Online IDs:', onlineIds);
     return (
       <span
         className={`inline-block w-2 h-2 rounded-full ml-2 ${onlineIds.includes(id) ? "bg-green-500" : "bg-muted-foreground"
@@ -116,8 +118,8 @@ export default function RoomPlayPage() {
         <AudioSpectrum
           label={
             <>
-              {player ? host.name : "Convidado"}
-              <span className="text-xs text-muted-foreground">{player && host.id === participantId && " (Você)"}</span>
+              {player ? player.name : "Convidado"}
+              <span className="text-xs text-muted-foreground">{player && player.id === participantId && " (Você)"}</span>
               {player && getStatusDot(player.id)}
             </>
           }
@@ -159,6 +161,7 @@ export default function RoomPlayPage() {
             <li key={obs.id} className="flex items-center gap-2">
               <span>{obs.name}</span>
               {obs.id === participantId && <span className="text-xs text-green-600">(Você)</span>}
+              {getStatusDot(obs.id)}
             </li>
           ))}
         </ul>
