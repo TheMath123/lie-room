@@ -1,7 +1,9 @@
 {
   "name": "server",
   "scripts": {
-    "dev": "bun run --hot src/api/index.ts"
+    "dev": "bun run --hot src/main/server.ts",
+    "build": "bun build.ts",
+     "start": "bun ./dist/src/main/server.js"
   },
   "dependencies": {
     "hono": "^4.8.9",
