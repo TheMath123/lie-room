@@ -6,6 +6,7 @@ type UseAudioSocketProps = {
   participantId: string;
   isTalking: boolean;
   onRemoteVolume?: (volume: number) => void;
+  onRemoteSpectrum?: (spectrum: number[]) => void; // NOVO!
 };
 
 export function useAudioSocket({
@@ -13,9 +14,11 @@ export function useAudioSocket({
   participantId,
   isTalking,
   onRemoteVolume,
+  onRemoteSpectrum, // NOVO!
 }: UseAudioSocketProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
   const [isReady, setIsReady] = useState(false);
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -34,6 +37,9 @@ export function useAudioSocket({
     ws.onmessage = (event) => {
       if (!audioContextRef.current) {
         audioContextRef.current = new window.AudioContext();
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+        analyserRef.current.connect(audioContextRef.current.destination);
       }
       if (typeof event.data === "string") return;
       const float32 = new Float32Array(event.data);
@@ -45,8 +51,28 @@ export function useAudioSocket({
       audioBuffer.copyToChannel(float32, 0);
       const source = audioContextRef.current.createBufferSource();
       source.buffer = audioBuffer;
-      source.connect(audioContextRef.current.destination);
+      source.connect(analyserRef.current!);
       source.start();
+
+      // Atualiza espectro enquanto toca
+      const analyser = analyserRef.current!;
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const bars = 32;
+      function updateSpectrum() {
+        analyser.getByteFrequencyData(dataArray);
+        const step = Math.floor(dataArray.length / bars);
+        const spectrumArr = Array.from({ length: bars }, (_, i) => {
+          const start = i * step;
+          const end = start + step;
+          const slice = dataArray.slice(start, end);
+          return slice.length
+            ? slice.reduce((a, b) => a + b, 0) / slice.length
+            : 0;
+        });
+        onRemoteSpectrum?.(spectrumArr);
+        requestAnimationFrame(updateSpectrum);
+      }
+      updateSpectrum();
 
       if (onRemoteVolume) {
         const avg =
@@ -57,7 +83,6 @@ export function useAudioSocket({
 
     ws.onclose = () => {
       setIsReady(false);
-      // Reconexão automática
       reconnectTimeout.current = setTimeout(connectWS, 1000);
     };
 
@@ -76,12 +101,11 @@ export function useAudioSocket({
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ type: "leave", roomId, participantId }));
       }
-      console.log('Disconnected from WebSocket');
       wsRef.current?.close();
       if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
       setIsReady(false);
     };
-  }, [roomId, participantId, onRemoteVolume]);
+  }, [roomId, participantId, onRemoteVolume, onRemoteSpectrum]);
 
   // Capturar e enviar áudio
   useEffect(() => {
