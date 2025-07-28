@@ -2,7 +2,7 @@
   "name": "server",
   "scripts": {
     "dev": "bun run --hot src/main/server.ts",
-    "build": "bun build.ts",
+    "build": "bun install && bun build.ts",
      "start": "bun ./dist/src/main/server.js"
   },
   "dependencies": {
