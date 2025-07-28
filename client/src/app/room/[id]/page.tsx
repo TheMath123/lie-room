@@ -8,7 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function RoomJoinPage() {
-	const params = useParams<{id: string}>();
+	const params = useParams<{ id: string }>();
 	const router = useRouter();
 	const [name, setName] = useState("");
 	const [role, setRole] = useState<"player" | "observer">("player");
@@ -23,7 +23,7 @@ export default function RoomJoinPage() {
 		setLoading(false);
 		if (isLeft(res)) {
 			setError(res.value);
-			return 
+			return
 		}
 
 		const data = res.value;
@@ -45,44 +45,44 @@ export default function RoomJoinPage() {
 					required
 				/>
 				<div className="flex gap-4">
-			
+
 					<div className="flex items-center gap-2">
-					<Input
-					id="player-role"
+						<Input
+							id="player-role"
 							type="radio"
 							name="role"
 							value="player"
 							checked={role === "player"}
 							onChange={() => setRole("player")}
-					/>
-							<label htmlFor="player-role">
-						Jogador
-					</label>
+						/>
+						<label htmlFor="player-role">
+							Jogador
+						</label>
 					</div>
 
 					<div className="flex items-center gap-2">
 
-					<Input
-						id="observer-role"
+						<Input
+							id="observer-role"
 							type="radio"
 							name="role"
 							value="observer"
 							checked={role === "observer"}
 							onChange={() => setRole("observer")}
 						/>
-					<label htmlFor="observer-role">
-						Observador
+						<label htmlFor="observer-role">
+							Observador
 						</label>
-						</div>
+					</div>
 				</div>
 				<Button
 					type="submit"
-			
+
 					disabled={loading}
 				>
 					{loading ? "Entrando..." : "Entrar"}
 				</Button>
-				{error && <div className="text-red-600">{error}</div>}
+				{error && <div className="text-destructive">{error}</div>}
 			</form>
 		</div>
 	);

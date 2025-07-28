@@ -19,30 +19,27 @@ export function EnterRoom() {
       setError(res.value);
       return;
     }
-   router.push(`/room/${roomId}/play`)
+    router.push(`/room/${roomId}/`)
   };
 
   return (
-    <div className=" max-w-xs w-full mt-4 p-4 border border-border rounded flex flex-col items-start">
-      <div className="flex w-full gap-2">
-        <Input
-          type="text"
-          inputMode="numeric"
-          value={roomId}
-          placeholder="Digite o ID da sala"
-          onChange={(e) => setRoomId(e.target.value)}
-          className="flex-1 p-2 border rounded bg-white text-xs"
-        />
-        <Button
-          type="button"
-          onClick={handleCopy}
-         
-        >
-          Entrar
-        </Button>
-      </div>
-        {error && (
-          <span className="text-red-500 text-xs mt-2">{error}</span>)}
+    <div className="flex flex-col gap-2">
+      <Input
+        type="text"
+        inputMode="numeric"
+        value={roomId}
+        placeholder="Digite o ID da sala"
+        onChange={(e) => setRoomId(e.target.value)}
+      />
+      <Button
+        type="button"
+        onClick={handleCopy}
+
+      >
+        Entrar
+      </Button>
+      {error && (
+        <span className="text-destructive text-xs mt-2">{error}</span>)}
     </div>
   );
 }

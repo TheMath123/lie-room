@@ -1,7 +1,7 @@
 import { JSX } from "react";
 
 type AudioSpectrumProps = {
-  label: string| JSX.Element;
+  label: string | JSX.Element;
   spectrum?: number[];
   bars?: number;
   isActive: boolean;
@@ -25,9 +25,8 @@ export function AudioSpectrum({
         {spectrum.map((v, i) => (
           <div
             key={i}
-            className={`transition-all duration-100 rounded-t ${
-              isActive ? "bg-green-600" : "bg-gray-400"
-            }`}
+            className={`transition-all duration-100 rounded-t ${isActive ? "bg-green-600" : "bg-muted-foreground"
+              }`}
             style={{
               width: `calc(100% / ${bars} - 2px)`,
               marginLeft: i === 0 ? 0 : 2,
