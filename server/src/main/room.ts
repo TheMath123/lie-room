@@ -34,7 +34,6 @@ roomRoutes.post('/:id/join', async (c) => {
   console.log('Joining room:', id);
   const { name, role } = await c.req.json()
   const room = rooms.get(id)
-    console.log('Rooms:', rooms);
   if (!room) return c.json({ error: 'Sala não encontrada' }, 404)
   const participant: Participant = { id: nanoid(8), name, role }
   console.log('Participant:', participant);

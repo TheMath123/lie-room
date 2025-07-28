@@ -6,6 +6,7 @@ type RoomMap = Map<string, Set<RoomClient>>;
 export const rooms: RoomMap = new Map();
 
 export function joinRoom(roomId: string, ws: WSContext, participantId: string) {
+  console.log('Joining room:', roomId, 'for participant:', participantId);
   if (!rooms.has(roomId)) rooms.set(roomId, new Set());
   rooms.get(roomId)!.add({ ws, participantId });
 }
@@ -15,6 +16,7 @@ export function leaveRoom(roomId: string, ws: WSContext, participantId: string) 
     const clients = rooms.get(roomId)!;
     for (const client of clients) {
       if (client.participantId === participantId) {
+        console.log('Leaving room:', roomId, 'for participant:', participantId);
         clients.delete(client);
         break;
       }

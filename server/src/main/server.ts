@@ -19,7 +19,6 @@ app.get(
   '/ws',
   upgradeWebSocket((c) => {
     const url = new URL(c.req.url)
-    console.log(c.req.url);
     const roomId = url.searchParams.get("roomId") || ""
     const participantId = url.searchParams.get("participantId") || ""
 

@@ -22,7 +22,6 @@ export default function RoomJoinPage() {
 		const res = await joinRoom(params.id, name, role);
 		setLoading(false);
 		if (isLeft(res)) {
-			console.log(res.value);
 			setError(res.value);
 			return 
 		}
