@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-export function useMicrophone(isActive: boolean) {
+export function useMicrophone(isActive: boolean, bars = 32) {
   const [volume, setVolume] = useState(0);
+  const [spectrum, setSpectrum] = useState<number[]>(Array(bars).fill(0));
   const streamRef = useRef<MediaStream | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -21,6 +22,7 @@ export function useMicrophone(isActive: boolean) {
         animationRef.current = null;
       }
       setVolume(0);
+      setSpectrum(Array(bars).fill(0));
       return;
     }
 
@@ -30,7 +32,7 @@ export function useMicrophone(isActive: boolean) {
       !navigator.mediaDevices.getUserMedia
     ) {
       setVolume(0);
-      console.warn("Microfone não suportado ou não disponível.");
+      setSpectrum(Array(bars).fill(0));
       return;
     }
 
@@ -51,16 +53,29 @@ export function useMicrophone(isActive: boolean) {
 
         const update = () => {
           analyser.getByteFrequencyData(dataArray);
+          // Calcula o volume médio
           const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
           setVolume(avg);
+
+          // Reduza o array para o número de barras desejado
+          const step = Math.floor(dataArray.length / bars);
+          const spectrumArr = Array.from({ length: bars }, (_, i) => {
+            const start = i * step;
+            const end = start + step;
+            const slice = dataArray.slice(start, end);
+            return slice.length
+              ? slice.reduce((a, b) => a + b, 0) / slice.length
+              : 0;
+          });
+          setSpectrum(spectrumArr);
+
           animationRef.current = requestAnimationFrame(update);
         };
         update();
       })
-      .catch((err) => {
+      .catch(() => {
         setVolume(0);
-        alert("Erro ao acessar o microfone: " + err.message);
-        console.error("Erro ao acessar o microfone:", err);
+        setSpectrum(Array(bars).fill(0));
       });
 
     return () => {
@@ -77,7 +92,7 @@ export function useMicrophone(isActive: boolean) {
         animationRef.current = null;
       }
     };
-  }, [isActive]);
+  }, [isActive, bars]);
 
-  return { volume };
+  return { volume, spectrum };
 }
