@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { isLeft } from "@/errors";
 import { joinRoom } from "@/server/room";
 import { useParams, useRouter } from "next/navigation";
@@ -35,7 +37,7 @@ export default function RoomJoinPage() {
 		<div className="max-w-md mx-auto mt-10 p-6 border rounded">
 			<h1 className="text-2xl font-bold mb-4">Entrar na Sala</h1>
 			<form onSubmit={handleJoin} className="flex flex-col gap-4">
-				<input
+				<Input
 					type="text"
 					placeholder="Seu nome"
 					value={name}
@@ -46,7 +48,7 @@ export default function RoomJoinPage() {
 				<div className="flex gap-4">
 			
 					<div className="flex items-center gap-2">
-					<input
+					<Input
 					id="player-role"
 							type="radio"
 							name="role"
@@ -61,7 +63,7 @@ export default function RoomJoinPage() {
 
 					<div className="flex items-center gap-2">
 
-					<input
+					<Input
 						id="observer-role"
 							type="radio"
 							name="role"
@@ -74,13 +76,13 @@ export default function RoomJoinPage() {
 						</label>
 						</div>
 				</div>
-				<button
+				<Button
 					type="submit"
-					className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+			
 					disabled={loading}
 				>
 					{loading ? "Entrando..." : "Entrar"}
-				</button>
+				</Button>
 				{error && <div className="text-red-600">{error}</div>}
 			</form>
 		</div>

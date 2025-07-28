@@ -1,6 +1,5 @@
 'use client';
 
-import { clientEnv } from "@/env/client";
 import { isLeft } from "@/errors";
 import { getRoom } from "@/server/room/get-room";
 import { useRouter } from "next/navigation";
@@ -12,19 +11,15 @@ export function EnterRoom() {
   const router = useRouter()
   const [roomId, setRoomId] = useState('');
   const [error, setError] = useState('');
-  const inviteUrl =
-    typeof window !== "undefined"
-      ? `${clientEnv.NEXT_PUBLIC_BASE_URL}room/${roomId}`
-      : "";
+
 
   const handleCopy = async () => {
-    if (!inviteUrl) return;
     const res = await getRoom(roomId);
     if (isLeft(res)) {
       setError(res.value);
       return;
     }
-   router.push(inviteUrl)
+   router.push(`/room/${roomId}/play`)
   };
 
   return (
@@ -32,6 +27,7 @@ export function EnterRoom() {
       <div className="flex w-full gap-2">
         <Input
           type="text"
+          inputMode="numeric"
           value={roomId}
           placeholder="Digite o ID da sala"
           onChange={(e) => setRoomId(e.target.value)}
@@ -44,9 +40,9 @@ export function EnterRoom() {
         >
           Entrar
         </Button>
+      </div>
         {error && (
           <span className="text-red-500 text-xs mt-2">{error}</span>)}
-      </div>
     </div>
   );
 }

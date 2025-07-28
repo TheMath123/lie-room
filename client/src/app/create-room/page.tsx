@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { isLeft } from "@/errors";
 import { createRoom } from "@/server/room";
 import { useRouter } from "next/navigation";
@@ -34,20 +36,19 @@ export default function CreateRoomPage() {
 		<div className="max-w-md mx-auto mt-10 p-6 border rounded">
 			<h1 className="text-2xl font-bold mb-4">Criar Sala de Interrogatório</h1>
 			<form onSubmit={handleCreate} className="flex flex-col gap-4">
-				<input
+				<Input
 					type="text"
 					placeholder="Seu nome (Mestre)"
 					value={hostName}
 					onChange={(e) => setHostName(e.target.value)}
-					className="border p-2 rounded"
 					required
 				/>
-				<button
+				<Button
 					type="submit"
-					className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+		
 				>
 					Criar Sala
-				</button>
+				</Button>
 					{error && <div className="text-red-600">{error}</div>}
 			</form>
 			{inviteUrl && (

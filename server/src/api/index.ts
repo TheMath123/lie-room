@@ -1,30 +1,39 @@
-import { ServerWebSocket } from 'bun';
-import { Hono } from 'hono';
-import { createBunWebSocket } from 'hono/bun';
-import { roomRoutes } from './room';
+import { Hono } from 'hono'
+import { createBunWebSocket } from 'hono/bun'
+import { roomRoutes } from "./room"
 
-import { userRoutes } from './user';
+import { broadcastToRoom, joinRoom, leaveRoom } from '@/ws/room'
+import { userRoutes } from "./user"
 
-const port = 5555;
-const app = new Hono();
 
-const { upgradeWebSocket, websocket } =
-  createBunWebSocket<ServerWebSocket>()
+const port = 5555
+const app = new Hono()
 
-app.route('/room', roomRoutes);
-app.route('/user', userRoutes);
-app.get('/', (c) => c.text('API is running!'));
+const { upgradeWebSocket, websocket } = createBunWebSocket<WebSocket>()
+
+app.route('/room', roomRoutes)
+app.route('/user', userRoutes)
+app.get('/', (c) => c.text('API is running!'))
 
 app.get(
   '/ws',
   upgradeWebSocket((c) => {
+    const url = new URL(c.req.url)
+    console.log(c.req.url);
+    const roomId = url.searchParams.get("roomId") || ""
+    const participantId = url.searchParams.get("participantId") || ""
+
     return {
-      onMessage(event, ws) {
-        console.log(`Message from client: ${event.data}`)
-        ws.send('Hello from server!')
+      onOpen(evt, ws) {
+        joinRoom(roomId, ws, participantId);
       },
-      onClose: () => {
-        console.log('Connection closed')
+      onMessage(evt, ws) {
+        if (evt.data instanceof ArrayBuffer) {
+          broadcastToRoom(roomId, evt.data, participantId);
+        }
+      },
+      onClose(evt, ws) {
+        leaveRoom(roomId, ws, participantId);
       },
     }
   })

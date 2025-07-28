@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 export function InviteLinkBox({ roomId }: { roomId: string }) {
 	const [copied, setCopied] = useState(false);
@@ -15,22 +17,20 @@ export function InviteLinkBox({ roomId }: { roomId: string }) {
 	};
 
 	return (
-		<div className=" max-w-xs w-full mt-4 p-4 bg-green-100 rounded flex flex-col items-start">
+		<div className=" max-w-xs w-full mt-4 p-4 border border-border rounded flex flex-col items-start">
 			<span className="mb-2 font-medium">Link de convite:</span>
 			<div className="flex w-full gap-2">
-				<input
+				<Input
 					type="text"
 					value={inviteUrl}
 					readOnly
-					className="flex-1 p-2 border rounded bg-white text-xs"
 				/>
-				<button
+				<Button
 					type="button"
 					onClick={handleCopy}
-					className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
 				>
 					{copied ? "Copiado!" : "Copiar"}
-				</button>
+				</Button>
 			</div>
 		</div>
 	);

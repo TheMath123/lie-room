@@ -1,7 +1,9 @@
 "use client";
 
 import { InviteLinkBox } from "@/components/room";
+import { Button } from "@/components/ui/button";
 import type { ParticipantRole } from "@/lib/schemas/room";
+import { cn } from "@/lib/utils";
 import { AudioSpectrum, useAudioSocket, useMicrophone } from "@/modules/audio";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,40 +14,39 @@ export default function RoomPlayPage() {
   const [role, setRole] = useState<ParticipantRole | null>(null);
   const [isTalking, setIsTalking] = useState(false);
   const [remoteVolume, setRemoteVolume] = useState(0);
-
-  // Recupera participantId do sessionStorage
-  const participantId =
-    typeof window !== "undefined"
-      ? sessionStorage.getItem("participantId") || ""
-      : "";
-  const roomId = params.id as string;
-
   const canTalk = role === "host" || role === "player";
   const { volume } = useMicrophone(isTalking && canTalk);
 
-  useAudioSocket({
-    roomId,
-    participantId,
-    isTalking: isTalking && canTalk,
-    onRemoteVolume: setRemoteVolume,
-  });
+  const participantId =
+  typeof window !== "undefined"
+    ? sessionStorage.getItem("participantId") || ""
+    : "";
+const roomId = params.id as string;
 
-  useEffect(() => {
-    // Recupera dados do participante
-    const participantRole = sessionStorage.getItem("participantRole");
-    if (!participantRole) {
-      router.replace(`/room/${params.id}`);
-      return;
-    }
-    setRole(participantRole as "host" | "player" | "observer");
-  }, [params.id, router]);
+
+useEffect(() => {
+  const participantRole = sessionStorage.getItem("participantRole");
+  if (!participantRole) {
+    router.replace(`/room/${params.id}`);
+    return;
+  }
+  setRole(participantRole as "host" | "player" | "observer");
+}, [params.id, router]);
+
+// Só inicialize o hook se ambos existirem
+useAudioSocket({
+  roomId,
+  participantId,
+  isTalking: isTalking && canTalk,
+  onRemoteVolume: setRemoteVolume,
+});
 
   if (!role) return null;
 
   return (
     <div className="flex flex-col items-center">
       {role === "host" && <InviteLinkBox roomId={roomId} />}
-      <main className="max-w-lg mx-auto mt-10 p-6 border rounded flex flex-col items-center">
+      <main className="max-w-2xl w-full mx-auto mt-10 p-6 border rounded flex flex-col items-center">
         <h1 className="text-2xl font-bold mb-6">Sala de Interrogatório</h1>
         <AudioSpectrum
           label="Mestre"
@@ -59,20 +60,16 @@ export default function RoomPlayPage() {
         />
 
         {canTalk && (
-          <button
+          <Button
             type="button"
-            className={`mt-8 px-6 py-3 rounded text-white font-bold transition-all ${
-              isTalking
-                ? "bg-red-600 animate-pulse"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className={cn(isTalking && "bg-green-500 hover:bg-green-500 animate-pulse")}
             onMouseDown={() => setIsTalking(true)}
             onMouseUp={() => setIsTalking(false)}
             onTouchStart={() => setIsTalking(true)}
             onTouchEnd={() => setIsTalking(false)}
           >
             {isTalking ? "Gravando..." : "Apertar para Falar"}
-          </button>
+          </Button>
         )}
 
         {!canTalk && (
