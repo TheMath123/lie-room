@@ -1,5 +1,7 @@
+import { JSX } from "react";
+
 type AudioSpectrumProps = {
-  label: string;
+  label: string| JSX.Element;
   spectrum?: number[];
   bars?: number;
   isActive: boolean;

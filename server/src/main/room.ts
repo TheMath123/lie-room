@@ -1,4 +1,5 @@
 import { nanoid } from '@/lib';
+import { rooms as wsRooms } from "@/ws/room"; // <-- Adicione isso
 import { Hono } from 'hono';
 
 type Role = 'host' | 'player' | 'observer'
@@ -48,3 +49,11 @@ roomRoutes.get('/:id/participants', (c) => {
   if (!room) return c.json({ error: 'Sala não encontrada' }, 404)
   return c.json(room.participants)
 })
+
+// NOVA ROTA: Listar IDs dos participantes online
+roomRoutes.get('/:id/online', (c) => {
+  const id = c.req.param('id');
+  const wsRoom = wsRooms.get(id);
+  if (!wsRoom) return c.json([]);
+  return c.json(Array.from(wsRoom).map(client => client.participantId));
+});
